@@ -1,0 +1,36 @@
+{
+  "parameters": {
+    "entities": [],
+    "queries": [],
+    "driveLocation": "cosight/template/test.xlsx"
+  },
+  "action": {
+  "name":"updateExcel",
+  "showPrompt": false,
+  "ruleProcessType": "for-each",
+  "batchSize": "",
+  "mappingFields":[
+  ],
+  "parameters": [
+    {
+      "name":"entities",
+      "prompt": "Entities",
+      "type":"LIST",
+      "promptType":"simple"
+    },
+    {
+      "name":"queries",
+      "prompt": "Entities",
+      "type":"LIST",
+      "promptType":"simple"
+    },
+    {
+      "name":"driveLocation",
+      "prompt": "Drive Location(include file name as well)",
+      "type":"STRING",
+      "promptType":"simple"
+    }
+  ]
+},
+  "CONTEXT_PATH": "s3://quantum.store.test.cosight.com.au/cosight/system/plugin/runtime/42aacc87-24bc-4418-9f6c-9161afee6c9b"
+}

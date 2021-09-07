@@ -1,0 +1,66 @@
+plugins {
+    id 'org.springframework.boot' version '2.4.5'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
+}
+
+def modelVersion = '1.5.6-SNAPSHOT';
+def sdkVersion = '2.0.1-SNAPSHOT';
+
+group = 'au.com.cosight.forex'
+group = 'au.com.cosight.forex'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+def envName = System.getenv('ENV_NAME');
+
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://cosight-dev-394277782245.d.codeartifact.ap-southeast-2.amazonaws.com/maven/cosight-public-repos-aws/'
+        credentials {
+            username "aws"
+            password System.env.CODEARTIFACT_AUTH_TOKEN
+        }
+    }
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
+    //
+
+    if('rickpezzimenti'.equalsIgnoreCase(envName)) {
+        println 'using rick files'
+        implementation files('../../fintrixGitRepo/cosight-model/build/libs/'+modelVersion+'.jar')
+        implementation files('../../fintrixGitRepo/sdk/build/libs/'+sdkVersion+'.jar')
+    } else if  ('arangananayakkara'.equalsIgnoreCase(envName)){
+        println 'using Aranga'
+        implementation files('../cosight-model/build/libs/cosight-model-'+modelVersion+'.jar')
+        implementation files('../cosight-sdk/build/libs/cosight-sdk-'+sdkVersion+'.jar')
+    } else {
+        println 'using repo'
+        implementation 'au.com.cosight:cosight-model:'+modelVersion
+        implementation 'au.com.cosight:cosight-sdk:'+sdkVersion
+    }
+
+    implementation 'org.springframework:spring-web:5.3.5'
+
+
+    implementation 'com.auth0:java-jwt:3.8.1'
+    implementation 'com.auth0:jwks-rsa:0.17.0'
+    implementation 'com.google.api-client:google-api-client:1.23.0'
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.6'
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
+    implementation platform('com.amazonaws:aws-java-sdk-bom:1.11.816')
+    implementation 'com.amazonaws:aws-java-sdk-s3'
+    implementation 'com.amazonaws:aws-java-sdk-dynamodb'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.3'
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    // https://mvnrepository.com/artifact/com.google.guava/guava
+    implementation group: 'com.google.guava', name: 'guava', version: '30.1.1-jre'
+}
+
+test {
+    useJUnitPlatform()
+}

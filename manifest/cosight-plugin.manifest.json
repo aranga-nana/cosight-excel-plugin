@@ -1,13 +1,12 @@
 {
   "uuid":"c65a9bb0-13e6-4378-aceb-43085a1f1ce9",
-  "name":"sample-plugin",
+  "name":"excel-plugin",
   "plugin-type":"springBoot",
   "availability":"global",
-  "oauth2": { "type": "AUTHORISATION_CODE", "clientId": "50C0AA02C529479884527A6FDB03EC18", "clientSecret": "bo1db0ouHH1Ir_z4DcY0-UBGw0mry26LUjF5PJdow3cLa3PK", "authorisationUrl": "https://login.xero.com/identity/connect/authorize", "scope": "openid profile email accounting.transactions accounting.contacts", "tokenUrl": "https://identity.xero.com/connect/token", "refreshUrl": "https://identity.xero.com/connect/token" },
   "info": {
-    "jar":"sample-plugin-0.0.1-SNAPSHOT.jar",
+    "jar":"excel-plugin-0.0.1-SNAPSHOT.jar",
     "version":"0.0.1-SNAPSHOT",
-    "path":"cosight/sample-plugin-0.0.1-SNAPSHOT.jar"
+    "path":"cosight/excel-plugin-0.0.1-SNAPSHOT.jar"
   },
   "actions": [
     {

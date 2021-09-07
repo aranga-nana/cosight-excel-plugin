@@ -1,9 +1,9 @@
 ### Excel Plugin Project for cosight
 This plugin update the sheets in excel file with selected entities and datasets (cosight Entity and Cosight DataSet)
 
-####Note:
+#### Note:
 
-####FOLLOWING ENVIRONMENT VARIABLES NEEDED  
+#### FOLLOWING ENVIRONMENT VARIABLES NEEDED  
 ```
 COSIGHT_USERNAME=aranga-cosight
 COSIGHT_PASSWORD=cosight

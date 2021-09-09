@@ -1,5 +1,5 @@
 {
-  "uuid":"c65a9bb0-13e6-4378-aceb-43085a1f1ce9",
+  "uuid":"15afe68d-b0b6-4460-b895-12dcc7b07a3e",
   "name":"excel-plugin",
   "plugin-type":"springBoot",
   "availability":"global",
@@ -21,17 +21,26 @@
           "name":"entities",
           "prompt": "Entities",
           "type":"LIST",
-          "promptType":"simple"
+          "promptType":"entity"
         },
         {
           "name":"queries",
-          "prompt": "Entities",
+          "prompt": "Queries",
           "type":"LIST",
-          "promptType":"simple"
+          "promptType":"query"
         },
         {
           "name":"driveLocation",
-          "prompt": "Drive Location(include file name as well)",
+          "prompt": "Drive Location and file",
+          "type":"STRING",
+          "promptType":"drive",
+          "data": {
+            "showFiles": true
+          }
+        },
+        {
+          "name":"prefix",
+          "prompt": "New File Prefix (leaving this blank will overwrite source file)",
           "type":"STRING",
           "promptType":"simple"
         }

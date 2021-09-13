@@ -4,7 +4,7 @@ plugins {
     id 'java'
 }
 
-def modelVersion = '1.5.6-SNAPSHOT';
+def modelVersion = '1.5.7-SNAPSHOT';
 def sdkVersion = '2.0.1-SNAPSHOT';
 
 group = 'au.com.cosight.forex'
@@ -55,8 +55,15 @@ dependencies {
     implementation 'com.amazonaws:aws-java-sdk-s3'
     implementation 'com.amazonaws:aws-java-sdk-dynamodb'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.3'
+
+    implementation 'org.apache.poi:poi:5.0.0'
+    implementation 'org.apache.poi:poi-ooxml:5.0.0'
+
+    testImplementation('org.junit.jupiter:junit-jupiter-params:5.2.0')
+    testImplementation('org.junit.jupiter:junit-jupiter-params:5.2.0')
     testImplementation group: 'junit', name: 'junit', version: '4.12'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
     // https://mvnrepository.com/artifact/com.google.guava/guava
     implementation group: 'com.google.guava', name: 'guava', version: '30.1.1-jre'
 }

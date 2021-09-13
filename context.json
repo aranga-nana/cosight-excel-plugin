@@ -1,14 +1,13 @@
 {
   "parameters": {
-    "entities": [],
-    "queries": [],
+    "entities": ["cosight__SystemUsers"],
+    "queries": ["de118a77-a998-4b7a-9521-ac0ee4af55df"],
     "driveLocation": "cosight/template/test.xlsx"
   },
   "action": {
   "name":"updateExcel",
   "showPrompt": false,
   "ruleProcessType": "for-each",
-  "batchSize": "",
   "mappingFields":[
   ],
   "parameters": [
@@ -16,17 +15,26 @@
       "name":"entities",
       "prompt": "Entities",
       "type":"LIST",
-      "promptType":"simple"
+      "promptType":"entity"
     },
     {
       "name":"queries",
-      "prompt": "Entities",
+      "prompt": "Queries",
       "type":"LIST",
-      "promptType":"simple"
+      "promptType":"query"
     },
     {
       "name":"driveLocation",
-      "prompt": "Drive Location(include file name as well)",
+      "prompt": "Drive Location and file",
+      "type":"STRING",
+      "promptType":"drive",
+      "data": {
+        "showFiles": true
+      }
+    },
+    {
+      "name":"prefix",
+      "prompt": "New File Prefix (leaving this blank will overwrite source file)",
       "type":"STRING",
       "promptType":"simple"
     }

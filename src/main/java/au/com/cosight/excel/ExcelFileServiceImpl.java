@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 
 
 @Service
@@ -48,8 +48,6 @@ public class ExcelFileServiceImpl implements ExcelFileService  {
             if (f.exists()) {
                 try (InputStream  stream = new FileInputStream(file.getLocalPath())) {
                     return createWorkbook(stream, FilenameUtils.getExtension(f.getName()));
-                }catch (IOException e){
-                    throw e;
                 }
             }
             return createWorkbook(null,FilenameUtils.getExtension(f.getName()));
@@ -81,41 +79,38 @@ public class ExcelFileServiceImpl implements ExcelFileService  {
 
         Map<String,DataFieldsDTO>  dataFieldMap =
                 columns.stream().collect(Collectors.toMap(DataFieldsDTO::getName, Function.identity()));
-
-        Sheet sheet = workbook.getSheet(reader.getSheetName());
-        final List<String> headerColumn = new ArrayList<>();
-        if (sheet == null) {
-            int colIndex = 0;
-            sheet = workbook.createSheet(reader.getSheetName());
-            headerColumn.addAll(columns.stream().map(DataFieldsDTO::getName).sorted().collect(Collectors.toList()));
-            createHeader(sheet,headerColumn);
-        }else {
-            sheet = workbook.getSheet(reader.getSheetName());
-            if (sheet == null) {
-                sheet = workbook.createSheet(reader.getSheetName());
-            }
-            Row headerRow = sheet.getRow(0);
-            final List<String> current = columns.stream().map(DataFieldsDTO::getName).sorted().collect(Collectors.toList());
-            if (headerRow == null) {
-                headerColumn.addAll(current);
-            }else {
-                int colIndex = 0;
-                while (true) {
-                    final  Cell cell = headerRow.getCell(colIndex);
-                    if (cell == null) {
-                        break;
-                    }
-                    headerColumn.add(cell.getStringCellValue());
-                    colIndex++;
-                }
-                if (!ListUtils.isEqualList(current,headerColumn)) {
-                    List<String> addtional = current.stream().filter(s -> !headerColumn.contains(s)).collect(Collectors.toList());
-                    headerColumn.addAll(addtional);
-                }
-                createHeader(sheet,headerColumn);
-            }
+        Sheet sheet = currentSheet(reader.getSheetName(),workbook);
+        List<String> headerColumn = new ArrayList<>();
+        headerColumn.addAll(columns.stream().map(DataFieldsDTO::getName).sorted().collect(Collectors.toList()));
+        Row headerRow = createHeaderRow(sheet);
+        if (headerRow.getCell(0) == null) {
+            createHeader(headerRow,headerColumn);
+        } else {
+            headerColumn = createHeaderWithExisting(columns,headerRow);
         }
+        createDetail(reader,sheet,workbook,headerColumn,dataFieldMap);
+    }
+    private List<String> createHeaderWithExisting( List<DataFieldsDTO> columns,Row headerRow) {
+        List<String> headerColumn = new ArrayList<>();
+        final List<String> current = columns.stream().map(DataFieldsDTO::getName).sorted().collect(Collectors.toList());
+        int colIndex = 0;
+        while (true) {
+            final  Cell cell = headerRow.getCell(colIndex);
+            if (cell == null) {
+                break;
+            }
+            headerColumn.add(cell.getStringCellValue());
+            colIndex++;
+        }
+        if (!ListUtils.isEqualList(current,headerColumn)) {
+            List<String> addtional = current.stream().filter(s -> !headerColumn.contains(s)).collect(Collectors.toList());
+            headerColumn.addAll(addtional);
+        }
+        createHeader(headerRow,headerColumn);
+        return headerColumn;
+    }
 
+    private void createDetail(DataReader reader,Sheet sheet,Workbook workbook,List<String> headerColumn,Map<String,DataFieldsDTO> dataFieldMap) {
         int pageSize = 10000;
         int start = 0;
         int rowIndex =  1;
@@ -144,7 +139,22 @@ public class ExcelFileServiceImpl implements ExcelFileService  {
                 break;
             }
         }
+    }
 
+
+    private Row createHeaderRow(Sheet sheet){
+        Row headerRow = sheet.getRow(0);
+        if (headerRow == null) {
+            headerRow = sheet.createRow(0);
+        }
+        return headerRow;
+    }
+    private Sheet currentSheet(String sheetName,Workbook workbook) {
+        Sheet sheet = workbook.getSheet(sheetName);
+        if (sheet == null) {
+            sheet = workbook.createSheet(sheetName);
+        }
+        return sheet;
     }
 
     private void writeCellValue(int index,Object o,DataFieldsDTO dto,Row row,Workbook workbook){
@@ -181,8 +191,7 @@ public class ExcelFileServiceImpl implements ExcelFileService  {
         return cell;
     }
 
-    private void createHeader(Sheet sheet, List<String> headerColumn){
-        Row header = sheet.createRow(0);
+    private void createHeader(Row header, List<String> headerColumn){
         int colIndex = 0;
         for(String col: headerColumn) {
             Cell cell = header.getCell(colIndex);

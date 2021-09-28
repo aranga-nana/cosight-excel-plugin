@@ -86,7 +86,7 @@ class ExcelFileServiceImplTest {
         excelFileService.apply(dataReader,dataFields,workbook);
 
 
-        Assert.assertTrue(workbook.getNumberOfSheets() == 1);
+        Assert.assertEquals(1,workbook.getNumberOfSheets());
         Assert.assertEquals("20.0",workbook.getSheetAt(0).getRow(1).getCell(0).getNumericCellValue()+"");
         Assert.assertEquals(DateUtil.convert("05/10/2021"),workbook.getSheetAt(0).getRow(1).getCell(1).getDateCellValue());
         Assert.assertEquals("Paul",workbook.getSheetAt(0).getRow(1).getCell(2).getStringCellValue());
@@ -138,7 +138,7 @@ class ExcelFileServiceImplTest {
         excelFileService.apply(dataReader,dataFields,workbook);
 
 
-        Assert.assertTrue(workbook.getNumberOfSheets() == 1);
+        Assert.assertEquals(1,workbook.getNumberOfSheets());
         // check the last row
 
         Assert.assertEquals("30.0",workbook.getSheetAt(0).getRow(5).getCell(0).getNumericCellValue()+"");
@@ -197,7 +197,8 @@ class ExcelFileServiceImplTest {
         excelFileService.apply(dataReader,dataFields,workbook);
 
 
-        Assert.assertTrue(workbook.getNumberOfSheets() == 1);
+        Assert.assertEquals(1,workbook.getNumberOfSheets());
+
         // check the last row
 
         Assert.assertEquals("30.0",workbook.getSheetAt(0).getRow(5).getCell(0).getNumericCellValue()+"");
@@ -255,7 +256,8 @@ class ExcelFileServiceImplTest {
         excelFileService.apply(dataReader,dataFields,workbook);
 
 
-        Assert.assertTrue(workbook.getNumberOfSheets() == 1);
+        Assert.assertEquals(1,workbook.getNumberOfSheets());
+
         // check the last row
 
 

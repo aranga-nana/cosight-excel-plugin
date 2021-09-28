@@ -8,9 +8,7 @@ import com.fintrix.common.util.DateUtil;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -71,7 +69,7 @@ public class ExcelFileServiceImpl implements ExcelFileService  {
         List<String> headerColumn = new ArrayList<>();
         final List<String> current = columns.stream().map(DataFieldsDTO::getName).sorted().collect(Collectors.toList());
         if (headerRow.getCell(0) == null) {
-            ExcelSheetUtil.createHeaderRow(headerRow,current);;
+            ExcelSheetUtil.createHeaderRow(headerRow,current);
             return current;
         }
 
@@ -88,7 +86,7 @@ public class ExcelFileServiceImpl implements ExcelFileService  {
             List<String> addtional = current.stream().filter(s -> !headerColumn.contains(s)).collect(Collectors.toList());
             headerColumn.addAll(addtional);
         }
-        ExcelSheetUtil.createHeaderRow(headerRow,current);;
+        ExcelSheetUtil.createHeaderRow(headerRow,current);
         return headerColumn;
     }
 

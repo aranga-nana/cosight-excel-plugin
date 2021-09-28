@@ -10,6 +10,8 @@ import java.util.List;
 
 public class ExcelSheetUtil {
 
+    private ExcelSheetUtil(){}
+
     public static Row createRow(Sheet sheet, int rowIndex){
         Row headerRow = sheet.getRow(rowIndex);
         if (headerRow == null) {

@@ -6,6 +6,7 @@ import au.com.cosight.sdk.plugin.drive.CosightDrive;
 import au.com.cosight.sdk.plugin.drive.CosightDriveManager;
 import com.fintrix.common.util.DateUtil;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @Service
@@ -36,52 +38,43 @@ public class ExcelFileServiceImpl implements ExcelFileService  {
 
 
     public Workbook create(CosightFile file) throws IOException {
-        InputStream stream = null;
-        try {
+
+        CosightDrive drive = driveManager.driveInstance();
 
 
-            CosightDrive drive = driveManager.driveInstance();
+        if (StringUtils.isEmpty(file.getS3Key())) {
 
-            String fileName = file.getS3Key();
-            if (StringUtils.isEmpty(file.getS3Key())) {
-                fileName = file.getLocalPath();
-                File f = new File(file.getLocalPath());
-                if (f.exists()) {
-                    stream = new FileInputStream(file.getLocalPath());
-                }
-            } else {
-                stream = drive.asInputStream(file.getS3Key());
-            }
-
-            String[] parts = fileName.split("\\.");
-            String ext = parts[parts.length - 1];
-            Workbook workbook = null;
-            if (stream == null) {
-                // need to create new excel file. existing file
-                if (ext.equalsIgnoreCase("xlsx")) {
-                    workbook = new XSSFWorkbook();
-                } else if (ext.equalsIgnoreCase("xls")) {
-                    workbook = new HSSFWorkbook();
-                }
-            } else {
-                if (ext.equalsIgnoreCase("xlsx")) {
-                    workbook = new XSSFWorkbook(stream);
-                } else if (ext.equalsIgnoreCase("xls")) {
-                    workbook = new HSSFWorkbook(stream);
+            File f = new File(file.getLocalPath());
+            if (f.exists()) {
+                try (InputStream  stream = new FileInputStream(file.getLocalPath())) {
+                    return createWorkbook(stream, FilenameUtils.getExtension(f.getName()));
+                }catch (IOException e){
+                    throw e;
                 }
             }
-
-            return workbook;
-        }catch (IOException e){
-            throw e;
-
-        }finally {
-            if (stream != null) {
-                stream.close();
-            }
+            return createWorkbook(null,FilenameUtils.getExtension(f.getName()));
         }
+        return createWorkbook(drive.asInputStream(file.getS3Key()),FilenameUtils.getExtension(file.getS3Key()));
     }
 
+    private Workbook createWorkbook(InputStream stream,String ext) throws IOException{
+        Workbook workbook = null;
+        if (stream == null) {
+            // need to create new excel file. existing file
+            if (ext.equalsIgnoreCase("xlsx")) {
+                workbook = new XSSFWorkbook();
+            } else if (ext.equalsIgnoreCase("xls")) {
+                workbook = new HSSFWorkbook();
+            }
+        } else {
+            if (ext.equalsIgnoreCase("xlsx")) {
+                workbook = new XSSFWorkbook(stream);
+            } else if (ext.equalsIgnoreCase("xls")) {
+                workbook = new HSSFWorkbook(stream);
+            }
+        }
+        return workbook;
+    }
 
 
     public void apply(DataReader reader,List<DataFieldsDTO> columns,Workbook workbook) {

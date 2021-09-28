@@ -47,52 +47,34 @@ public class ExcelFileServiceImpl implements ExcelFileService  {
             File f = new File(file.getLocalPath());
             if (f.exists()) {
                 try (InputStream  stream = new FileInputStream(file.getLocalPath())) {
-                    return createWorkbook(stream, FilenameUtils.getExtension(f.getName()));
+                    return ExcelSheetUtil.createWorkbook(stream, FilenameUtils.getExtension(f.getName()));
                 }
             }
-            return createWorkbook(null,FilenameUtils.getExtension(f.getName()));
+            return ExcelSheetUtil.createWorkbook(null,FilenameUtils.getExtension(f.getName()));
         }
-        return createWorkbook(drive.asInputStream(file.getS3Key()),FilenameUtils.getExtension(file.getS3Key()));
+        return ExcelSheetUtil.createWorkbook(drive.asInputStream(file.getS3Key()),FilenameUtils.getExtension(file.getS3Key()));
     }
-
-    private Workbook createWorkbook(InputStream stream,String ext) throws IOException{
-        Workbook workbook = null;
-        if (stream == null) {
-            // need to create new excel file. existing file
-            if (ext.equalsIgnoreCase("xlsx")) {
-                workbook = new XSSFWorkbook();
-            } else if (ext.equalsIgnoreCase("xls")) {
-                workbook = new HSSFWorkbook();
-            }
-        } else {
-            if (ext.equalsIgnoreCase("xlsx")) {
-                workbook = new XSSFWorkbook(stream);
-            } else if (ext.equalsIgnoreCase("xls")) {
-                workbook = new HSSFWorkbook(stream);
-            }
-        }
-        return workbook;
-    }
-
 
     public void apply(DataReader reader,List<DataFieldsDTO> columns,Workbook workbook) {
 
         Map<String,DataFieldsDTO>  dataFieldMap =
                 columns.stream().collect(Collectors.toMap(DataFieldsDTO::getName, Function.identity()));
-        Sheet sheet = currentSheet(reader.getSheetName(),workbook);
-        List<String> headerColumn = new ArrayList<>();
-        headerColumn.addAll(columns.stream().map(DataFieldsDTO::getName).sorted().collect(Collectors.toList()));
-        Row headerRow = createHeaderRow(sheet);
-        if (headerRow.getCell(0) == null) {
-            createHeader(headerRow,headerColumn);
-        } else {
-            headerColumn = createHeaderWithExisting(columns,headerRow);
-        }
+
+        Sheet sheet = ExcelSheetUtil.getSheetByName(reader.getSheetName(),workbook);
+
+        List<String> headerColumn = createHeaderRow(columns,sheet);
+
         createDetail(reader,sheet,workbook,headerColumn,dataFieldMap);
     }
-    private List<String> createHeaderWithExisting( List<DataFieldsDTO> columns,Row headerRow) {
+    private List<String> createHeaderRow( List<DataFieldsDTO> columns,Sheet sheet) {
+        Row headerRow = ExcelSheetUtil.createRow(sheet,0);
         List<String> headerColumn = new ArrayList<>();
         final List<String> current = columns.stream().map(DataFieldsDTO::getName).sorted().collect(Collectors.toList());
+        if (headerRow.getCell(0) == null) {
+            ExcelSheetUtil.createHeaderRow(headerRow,current);;
+            return current;
+        }
+
         int colIndex = 0;
         while (true) {
             final  Cell cell = headerRow.getCell(colIndex);
@@ -106,7 +88,7 @@ public class ExcelFileServiceImpl implements ExcelFileService  {
             List<String> addtional = current.stream().filter(s -> !headerColumn.contains(s)).collect(Collectors.toList());
             headerColumn.addAll(addtional);
         }
-        createHeader(headerRow,headerColumn);
+        ExcelSheetUtil.createHeaderRow(headerRow,current);;
         return headerColumn;
     }
 
@@ -119,11 +101,7 @@ public class ExcelFileServiceImpl implements ExcelFileService  {
             DataReaderResult result = reader.read(start,e);
             start = result.getNext();
             for(Map<String,Object> itemRow : result.getItems()) {
-                Row excelRow = null;
-                excelRow =  sheet.getRow(rowIndex);
-                if (excelRow == null) {
-                    excelRow =  sheet.createRow(rowIndex);
-                }
+                Row excelRow =  ExcelSheetUtil.createRow(sheet,rowIndex);
                 int colIndex = 0;
                 for(String col: headerColumn){
                     DataFieldsDTO dto = dataFieldMap.get(col);
@@ -139,22 +117,6 @@ public class ExcelFileServiceImpl implements ExcelFileService  {
                 break;
             }
         }
-    }
-
-
-    private Row createHeaderRow(Sheet sheet){
-        Row headerRow = sheet.getRow(0);
-        if (headerRow == null) {
-            headerRow = sheet.createRow(0);
-        }
-        return headerRow;
-    }
-    private Sheet currentSheet(String sheetName,Workbook workbook) {
-        Sheet sheet = workbook.getSheet(sheetName);
-        if (sheet == null) {
-            sheet = workbook.createSheet(sheetName);
-        }
-        return sheet;
     }
 
     private void writeCellValue(int index,Object o,DataFieldsDTO dto,Row row,Workbook workbook){
@@ -184,23 +146,9 @@ public class ExcelFileServiceImpl implements ExcelFileService  {
         if ("Decimal".equals(type) || "Number".equals(type)) {
             cellType = CellType.NUMERIC;
         }
-        Cell cell = row.getCell(index);
-        if (cell == null) {
-            cell = row.createCell(index, cellType);
-        }
-        return cell;
+        return ExcelSheetUtil.createCell(row,cellType,index);
     }
 
-    private void createHeader(Row header, List<String> headerColumn){
-        int colIndex = 0;
-        for(String col: headerColumn) {
-            Cell cell = header.getCell(colIndex);
-            if (cell == null) {
-                cell = header.createCell(colIndex, CellType.STRING);
-            }
-            cell.setCellValue(col);
-            colIndex++;
-        }
-    }
+
 
 }

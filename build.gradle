@@ -4,8 +4,8 @@ plugins {
     id 'java'
 }
 
-def modelVersion = '1.5.7-SNAPSHOT';
-def sdkVersion = '2.0.1-SNAPSHOT';
+def modelVersion = '1.5.8-SNAPSHOT';
+def sdkVersion = '2.0.2-SNAPSHOT';
 
 group = 'au.com.cosight.forex'
 group = 'au.com.cosight.forex'
@@ -58,6 +58,7 @@ dependencies {
 
     implementation 'org.apache.poi:poi:5.0.0'
     implementation 'org.apache.poi:poi-ooxml:5.0.0'
+
 
     testImplementation('org.junit.jupiter:junit-jupiter-params:5.2.0')
     testImplementation('org.junit.jupiter:junit-jupiter-params:5.2.0')

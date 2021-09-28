@@ -29,6 +29,7 @@ public class ExcelFileServiceImpl implements ExcelFileService  {
 
     private final CosightDriveManager driveManager;
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     public ExcelFileServiceImpl(CosightDriveManager driveManager) {
         this.driveManager = driveManager;
     }
@@ -154,43 +155,37 @@ public class ExcelFileServiceImpl implements ExcelFileService  {
     }
 
     private void writeCellValue(int index,Object o,DataFieldsDTO dto,Row row,Workbook workbook){
-
-        Cell cell = row.getCell(index);
+        Cell cell = createCell(row,index,dto.getType());
         if (o == null) {
-            if (cell == null) {
-                cell = row.createCell(index, CellType.STRING);
-            }
             cell.setCellValue("");
         }else if ("Decimal".equals(dto.getType())) {
             CellStyle cellStyle = workbook.createCellStyle();
             CreationHelper createHelper = workbook.getCreationHelper();
             cellStyle.setDataFormat(createHelper.createDataFormat().getFormat("###########0"));
-            if (cell == null) {
-                cell = row.createCell(index,CellType.NUMERIC);
-            }
-
             cell.setCellValue(Long.valueOf(o.toString()));
         }else if ("Number".equals(dto.getType())) {
-            if (cell == null) {
-                cell = row.createCell(index,CellType.NUMERIC);
-            }
             cell.setCellValue(Double.valueOf(o.toString()));
         }else if ("Date".equals(dto.getType()) || "DateTime".equals(dto.getType())) {
-            if (cell == null) {
-                cell = row.createCell(index, CellType.STRING);
-            }
             CellStyle cellStyle = workbook.createCellStyle();
             CreationHelper createHelper = workbook.getCreationHelper();
             cellStyle.setDataFormat(createHelper.createDataFormat().getFormat("dd/MM/yyyy"));
             cell.setCellStyle(cellStyle);
             cell.setCellValue(DateUtil.convert(o.toString()));
         } else {
-            if (cell == null) {
-                cell = row.createCell(index, CellType.STRING);
-            }
             cell.setCellValue(o.toString());
         }
 
+    }
+    private Cell createCell(Row row,int index,String type) {
+        CellType cellType = CellType.STRING;
+        if ("Decimal".equals(type) || "Number".equals(type)) {
+            cellType = CellType.NUMERIC;
+        }
+        Cell cell = row.getCell(index);
+        if (cell == null) {
+            cell = row.createCell(index, cellType);
+        }
+        return cell;
     }
 
     private void createHeader(Sheet sheet, List<String> headerColumn){

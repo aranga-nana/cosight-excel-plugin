@@ -1,5 +1,6 @@
 package au.com.cosight.excel;
 
+import au.com.cosight.sdk.annotation.EnableCosightDrive;
 import au.com.cosight.sdk.entities.instances.EntityInstanceClient;
 import au.com.cosight.sdk.entities.instances.EntityInstanceClientBuilder;
 import org.junit.Assert;
@@ -9,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@EnableCosightDrive
 class EntityInstanceDataReaderTest {
 
 

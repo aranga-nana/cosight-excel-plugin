@@ -141,7 +141,7 @@ class ExcelFileServiceImplTest {
 
         Assert.assertTrue(workbook.getNumberOfSheets() == 1);
         // check the last row
-        workbook.write(new FileOutputStream("TT1.xlsx"));
+
         Assert.assertEquals("30.0",workbook.getSheetAt(0).getRow(5).getCell(0).getNumericCellValue()+"");
         Assert.assertEquals(DateUtil.convert("06/07/1980"),workbook.getSheetAt(0).getRow(5).getCell(1).getDateCellValue());
         Assert.assertEquals("L2",workbook.getSheetAt(0).getRow(5).getCell(2).getStringCellValue());
@@ -206,5 +206,63 @@ class ExcelFileServiceImplTest {
         Assert.assertEquals("L2",workbook.getSheetAt(0).getRow(5).getCell(2).getStringCellValue());
         Assert.assertEquals("129022",workbook.getSheetAt(0).getRow(5).getCell(3).getStringCellValue());
 
+    }
+
+    @Test
+    void applyExistingSheetColumnDeletedSuccess() throws Exception{
+        DataReader dataReader = new DataReader() {
+            @Override
+            public DataReaderResult read(int start, int pageSize) {
+                DataReaderResult result = new DataReaderResult();
+                result.setNext(0);
+                List<Map<String,Object>> mockResult = new ArrayList<>();
+                mockResult.add(ImmutableMap.of("Name","Paul","BCODE","12142","Age",20));
+                mockResult.add(ImmutableMap.of("Name","David","BCODE","141222","Age",45));
+                mockResult.add(ImmutableMap.of("Name","Rob","BCODE","126222","Age",45));
+                mockResult.add(ImmutableMap.of("Name","L1","BCODE","121722","Age",45));
+                mockResult.add(ImmutableMap.of("Name","L2","BCODE","129022","Age",30));
+                result.setItems(mockResult);
+                return result;
+            }
+
+            @Override
+            public String getSheetName() {
+                return "Employee";
+            }
+        };
+        List<DataFieldsDTO> dataFields = new ArrayList<>();
+        DataFieldsDTO f = new DataFieldsDTO();
+        f.setType("String");
+        f.setName("Name");
+        dataFields.add(f);
+
+        f = new DataFieldsDTO();
+        f.setType("String");
+        f.setName("BCODE");
+        dataFields.add(f);
+
+        f = new DataFieldsDTO();
+        f.setType("Decimal");
+        f.setName("Age");
+        dataFields.add(f);
+
+
+
+
+        CosightFile file = new CosightFile();
+        file.setLocalPath("./src/test/resources/Exist01.xlsx");
+        Workbook workbook = excelFileService.create(file);
+
+        excelFileService.apply(dataReader,dataFields,workbook);
+
+
+        Assert.assertTrue(workbook.getNumberOfSheets() == 1);
+        // check the last row
+
+
+
+        Assert.assertEquals("30.0",workbook.getSheetAt(0).getRow(5).getCell(0).getNumericCellValue()+"");
+        Assert.assertEquals("129022",workbook.getSheetAt(0).getRow(5).getCell(3).getStringCellValue());
+        Assert.assertEquals("L2",workbook.getSheetAt(0).getRow(5).getCell(2).getStringCellValue());
     }
 }

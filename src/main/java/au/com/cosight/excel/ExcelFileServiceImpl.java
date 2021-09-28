@@ -82,15 +82,7 @@ public class ExcelFileServiceImpl implements ExcelFileService  {
             int colIndex = 0;
             sheet = workbook.createSheet(reader.getSheetName());
             headerColumn.addAll(columns.stream().map(DataFieldsDTO::getName).sorted().collect(Collectors.toList()));
-            Row header = sheet.createRow(0);
-            for(String col: headerColumn) {
-                Cell cell = header.getCell(colIndex);
-                if (cell == null) {
-                    cell = header.createCell(colIndex, CellType.STRING);
-                }
-                cell.setCellValue(col);
-                colIndex++;
-            }
+            createHeader(sheet,headerColumn);
         }else {
             sheet = workbook.getSheet(reader.getSheetName());
             if (sheet == null) {
@@ -110,13 +102,12 @@ public class ExcelFileServiceImpl implements ExcelFileService  {
                     headerColumn.add(cell.getStringCellValue());
                     colIndex++;
                 }
-                List<String> common = ListUtils.intersection(headerColumn,current);
-                if (common.size() != current.size()) {
+                if (!ListUtils.isEqualList(current,headerColumn)) {
                     List<String> addtional = current.stream().filter(s -> !headerColumn.contains(s)).collect(Collectors.toList());
                     headerColumn.addAll(addtional);
                 }
+                createHeader(sheet,headerColumn);
             }
-
         }
 
         int pageSize = 10000;
@@ -135,10 +126,7 @@ public class ExcelFileServiceImpl implements ExcelFileService  {
                 int colIndex = 0;
                 for(String col: headerColumn){
                     DataFieldsDTO dto = dataFieldMap.get(col);
-                    if (dto == null) {
-                        writeCellValue(colIndex,"",dto,excelRow,workbook);
-                    }
-                    else {
+                    if (dto != null) {
                         writeCellValue(colIndex,itemRow.get(col),dto,excelRow,workbook);
                     }
                     colIndex++;
@@ -191,6 +179,19 @@ public class ExcelFileServiceImpl implements ExcelFileService  {
             cell.setCellValue(o.toString());
         }
 
+    }
+
+    private void createHeader(Sheet sheet, List<String> headerColumn){
+        Row header = sheet.createRow(0);
+        int colIndex = 0;
+        for(String col: headerColumn) {
+            Cell cell = header.getCell(colIndex);
+            if (cell == null) {
+                cell = header.createCell(colIndex, CellType.STRING);
+            }
+            cell.setCellValue(col);
+            colIndex++;
+        }
     }
 
 }

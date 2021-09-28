@@ -1,5 +1,17 @@
 package au.com.cosight.excel;
 
+import au.com.cosight.common.dto.plugin.CosightFile;
+import au.com.cosight.entity.service.dto.DataFieldsDTO;
+import au.com.cosight.sdk.plugin.drive.CosightDrive;
+import au.com.cosight.sdk.plugin.drive.CosightDriveManager;
+import com.fintrix.common.util.DateUtil;
+import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.stereotype.Service;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -9,19 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-
-import au.com.cosight.common.dto.plugin.CosightFile;
-import au.com.cosight.entity.service.dto.DataFieldsDTO;
-import au.com.cosight.sdk.plugin.drive.CosightDrive;
-import au.com.cosight.sdk.plugin.drive.CosightDriveManager;
-import org.apache.commons.collections4.ListUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.stereotype.Service;
-import com.fintrix.common.util.DateUtil;
 
 
 @Service
@@ -36,42 +35,55 @@ public class ExcelFileServiceImpl implements ExcelFileService  {
 
 
     public Workbook create(CosightFile file) throws IOException {
-        CosightDrive drive = driveManager.driveInstance();
         InputStream stream = null;
-        String fileName = file.getS3Key();
-        if (StringUtils.isEmpty(file.getS3Key())) {
-            fileName = file.getLocalPath();
-            File f = new File(file.getLocalPath());
-            if (f.exists()) {
-               stream = new FileInputStream(file.getLocalPath());
-            }
-        }else {
-           stream =  drive.asInputStream(file.getS3Key());
-        }
+        try {
 
-        String[] parts = fileName.split("\\.");
-        String ext = parts[parts.length -1];
-        Workbook workbook = null;
-        if (stream == null) {
-            // need to create new excel file. existing file
-            if (ext.equalsIgnoreCase("xlsx")) {
-                workbook = new XSSFWorkbook();
-            } else if (ext.equalsIgnoreCase("xls")) {
-                workbook = new HSSFWorkbook();
+
+            CosightDrive drive = driveManager.driveInstance();
+
+            String fileName = file.getS3Key();
+            if (StringUtils.isEmpty(file.getS3Key())) {
+                fileName = file.getLocalPath();
+                File f = new File(file.getLocalPath());
+                if (f.exists()) {
+                    stream = new FileInputStream(file.getLocalPath());
+                }
+            } else {
+                stream = drive.asInputStream(file.getS3Key());
             }
-        }else {
-            if (ext.equalsIgnoreCase("xlsx")) {
-                workbook = new XSSFWorkbook(stream);
-            } else if (ext.equalsIgnoreCase("xls")) {
-                workbook = new HSSFWorkbook(stream);
+
+            String[] parts = fileName.split("\\.");
+            String ext = parts[parts.length - 1];
+            Workbook workbook = null;
+            if (stream == null) {
+                // need to create new excel file. existing file
+                if (ext.equalsIgnoreCase("xlsx")) {
+                    workbook = new XSSFWorkbook();
+                } else if (ext.equalsIgnoreCase("xls")) {
+                    workbook = new HSSFWorkbook();
+                }
+            } else {
+                if (ext.equalsIgnoreCase("xlsx")) {
+                    workbook = new XSSFWorkbook(stream);
+                } else if (ext.equalsIgnoreCase("xls")) {
+                    workbook = new HSSFWorkbook(stream);
+                }
+            }
+
+            return workbook;
+        }catch (IOException e){
+            throw e;
+
+        }finally {
+            if (stream != null) {
+                stream.close();
             }
         }
-        return  workbook;
     }
 
 
 
-    public void apply(DataReader reader,List<DataFieldsDTO> columns,Workbook workbook) throws Exception{
+    public void apply(DataReader reader,List<DataFieldsDTO> columns,Workbook workbook) {
 
         Map<String,DataFieldsDTO>  dataFieldMap =
                 columns.stream().collect(Collectors.toMap(DataFieldsDTO::getName, Function.identity()));

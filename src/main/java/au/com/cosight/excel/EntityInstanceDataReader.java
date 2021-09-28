@@ -1,7 +1,6 @@
 package au.com.cosight.excel;
 
 import au.com.cosight.sdk.entities.instances.EntityInstanceClient;
-import org.springframework.stereotype.Component;
 
 
 public class EntityInstanceDataReader implements DataReader {

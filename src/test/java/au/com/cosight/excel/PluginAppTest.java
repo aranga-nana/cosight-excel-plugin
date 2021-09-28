@@ -1,5 +1,4 @@
 package au.com.cosight.excel;
-import static org.junit.jupiter.api.Assertions.*;
 
 import au.com.cosight.common.dto.plugin.CosightExecutionContext;
 import au.com.cosight.common.dto.plugin.PluginParameterUtils;
@@ -9,6 +8,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 
 @RunWith(SpringRunner.class)

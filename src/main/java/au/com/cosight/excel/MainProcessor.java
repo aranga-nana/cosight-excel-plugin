@@ -52,9 +52,6 @@ public class MainProcessor {
         CosightFile  cosightFile = new CosightFile();
         cosightFile.setS3Key(driveLocation.asString());
         Workbook workbook = excelFileService.create(cosightFile);
-        if (workbook == null) {
-            return false;
-        }
         boolean success = updateWorkbook(workbook);
         if (success) {
             String[] parts = driveLocation.asString().split("/");
@@ -63,7 +60,7 @@ public class MainProcessor {
             try (OutputStream outputStream = new FileOutputStream(file)){
                 workbook.write(outputStream);
                 return driveManager.driveInstance().copyLocal(file,generate3Key(cosightFile,prefix));
-            }catch (Throwable e) {
+            }catch (Exception e) {
                 logger.error("{}",e.getMessage());
             }
 

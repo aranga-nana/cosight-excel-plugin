@@ -7,7 +7,6 @@ import au.com.cosight.excel.DataReaderResult;
 import au.com.cosight.excel.ExcelSheetUtil;
 import au.com.cosight.sdk.plugin.drive.CosightDrive;
 import au.com.cosight.sdk.plugin.drive.CosightDriveManager;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fintrix.common.util.DateUtil;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -57,8 +56,8 @@ public class ExcelFileServiceImpl implements ExcelFileService  {
         try (InputStream inputStream = drive.asInputStream(file.getS3Key())) {
             return ExcelSheetUtil.createWorkbook(inputStream,FilenameUtils.getExtension(file.getS3Key()));
 
-        }catch (Throwable e){
-
+        }catch (Exception e){
+            e.printStackTrace();
         }
         return ExcelSheetUtil.createWorkbook(null,FilenameUtils.getExtension(file.getS3Key()));
     }

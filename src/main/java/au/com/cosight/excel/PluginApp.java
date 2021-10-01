@@ -39,9 +39,8 @@ public class PluginApp implements CommandLineRunner {
         logger.info("executionContext.isBatchProcess() => {}",executionContext.isBatchProcess());
         try {
             process.updateWorkbook();
-        }catch (Throwable e) {
+        }catch (Exception e) {
             logger.error("ERROR {}",e.getMessage());
-            throw e;
         }
     }
 }

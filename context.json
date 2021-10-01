@@ -2,7 +2,8 @@
   "parameters": {
     "entities": ["cosight__SystemUsers"],
     "queries": ["de118a77-a998-4b7a-9521-ac0ee4af55df"],
-    "driveLocation": "cosight/template/test.xlsx"
+    "driveLocation": "cosight/template/test.xlsx",
+    "prefix": "copy"
   },
   "action": {
   "name":"updateExcel",

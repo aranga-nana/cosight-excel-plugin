@@ -5,7 +5,6 @@ import au.com.cosight.sdk.annotation.EnableCosightDrive;
 import au.com.cosight.sdk.annotation.EnableCosightRuntimeContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -16,8 +15,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class PluginApp implements CommandLineRunner {
     private static Logger logger = LoggerFactory.getLogger("excel-plugin");
 
-    @Autowired
-    private CosightExecutionContext executionContext;
+    private final CosightExecutionContext executionContext;
+    private final MainProcessor process;
+
+    public PluginApp(CosightExecutionContext executionContext, MainProcessor process) {
+        this.executionContext = executionContext;
+        this.process = process;
+    }
+
 
     public static void main(String[] args)  {
         SpringApplication.run(PluginApp.class,args);
@@ -32,6 +37,11 @@ public class PluginApp implements CommandLineRunner {
         logger.info("plugin starting.. {}",executionContext.isLoaded());
         logger.info("RUNTIME INFO {}",executionContext.getRuntimeInfo());
         logger.info("executionContext.isBatchProcess() => {}",executionContext.isBatchProcess());
-
+        try {
+            process.updateWorkbook();
+        }catch (Throwable e) {
+            logger.error("ERROR {}",e.getMessage());
+            throw e;
+        }
     }
 }

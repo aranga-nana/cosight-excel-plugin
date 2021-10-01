@@ -1,9 +1,13 @@
-package au.com.cosight.excel;
+package au.com.cosight.excel.service;
 
 import au.com.cosight.common.dto.plugin.CosightFile;
 import au.com.cosight.entity.service.dto.DataFieldsDTO;
+import au.com.cosight.excel.DataReader;
+import au.com.cosight.excel.DataReaderResult;
+import au.com.cosight.excel.ExcelSheetUtil;
 import au.com.cosight.sdk.plugin.drive.CosightDrive;
 import au.com.cosight.sdk.plugin.drive.CosightDriveManager;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fintrix.common.util.DateUtil;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -50,10 +54,16 @@ public class ExcelFileServiceImpl implements ExcelFileService  {
             }
             return ExcelSheetUtil.createWorkbook(null,FilenameUtils.getExtension(f.getName()));
         }
-        return ExcelSheetUtil.createWorkbook(drive.asInputStream(file.getS3Key()),FilenameUtils.getExtension(file.getS3Key()));
+        try (InputStream inputStream = drive.asInputStream(file.getS3Key())) {
+            return ExcelSheetUtil.createWorkbook(inputStream,FilenameUtils.getExtension(file.getS3Key()));
+
+        }catch (Throwable e){
+
+        }
+        return ExcelSheetUtil.createWorkbook(null,FilenameUtils.getExtension(file.getS3Key()));
     }
 
-    public void apply(DataReader reader,List<DataFieldsDTO> columns,Workbook workbook) {
+    public void apply(DataReader reader, List<DataFieldsDTO> columns, Workbook workbook) {
 
         Map<String,DataFieldsDTO>  dataFieldMap =
                 columns.stream().collect(Collectors.toMap(DataFieldsDTO::getName, Function.identity()));
@@ -125,19 +135,39 @@ public class ExcelFileServiceImpl implements ExcelFileService  {
             CellStyle cellStyle = workbook.createCellStyle();
             CreationHelper createHelper = workbook.getCreationHelper();
             cellStyle.setDataFormat(createHelper.createDataFormat().getFormat("###########0"));
+            o = fixValue(o);
+            if (o == null){
+                o = "0";
+            }
             cell.setCellValue(Long.valueOf(o.toString()));
         }else if ("Number".equals(dto.getType())) {
+            o = fixValue(o);
+            if (o == null){
+                o = "0";
+            }
             cell.setCellValue(Double.valueOf(o.toString()));
         }else if ("Date".equals(dto.getType()) || "DateTime".equals(dto.getType())) {
+            o = fixValue(o);
             CellStyle cellStyle = workbook.createCellStyle();
             CreationHelper createHelper = workbook.getCreationHelper();
             cellStyle.setDataFormat(createHelper.createDataFormat().getFormat("dd/MM/yyyy"));
             cell.setCellStyle(cellStyle);
             cell.setCellValue(DateUtil.convert(o.toString()));
         } else {
+            o = fixValue(o);
+            if (o == null){
+                o = "";
+            }
             cell.setCellValue(o.toString());
         }
 
+    }
+    private Object fixValue(Object o){
+        if (o instanceof List) {
+            o = ((List)o).get(0);
+            return o;
+        }
+        return o;
     }
     private Cell createCell(Row row,int index,String type) {
         CellType cellType = CellType.STRING;

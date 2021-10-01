@@ -8,9 +8,12 @@ public class QueryResultDataReader implements DataReader {
 
     private final QueryClient client;
     private String vertex;
+    private String uuid;
 
-    public QueryResultDataReader(QueryClient client) {
+    public QueryResultDataReader(String vertex,String uuid, QueryClient client) {
         this.client = client;
+        this.vertex = vertex;
+        this.uuid = uuid;
     }
 
     @Override
@@ -19,14 +22,14 @@ public class QueryResultDataReader implements DataReader {
         QueryExecutionRequest request = new QueryExecutionRequest();
         request.setStartRow(startRow);
         request.setEndRow(endRow);
+        request.setUuid(uuid);
         QueryExecutionResponse response = client.execute(request);
         r.getMetaData().put("columns",response.getColumns());
-        vertex = response.getName();
         r.setItems(response.getData().getData());
         if (r.getItems().size() > (endRow - startRow)){
             r.setNext(endRow + 1);
         }
-        return null;
+        return r;
     }
 
     @Override

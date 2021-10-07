@@ -12,6 +12,8 @@ import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -29,7 +31,7 @@ import java.util.stream.Collectors;
 @Service
 public class ExcelFileServiceImpl implements ExcelFileService  {
 
-
+    private static Logger logger = LoggerFactory.getLogger(ExcelFileServiceImpl.class);
     private final CosightDriveManager driveManager;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
@@ -51,10 +53,17 @@ public class ExcelFileServiceImpl implements ExcelFileService  {
                     return ExcelSheetUtil.createWorkbook(stream, FilenameUtils.getExtension(f.getName()));
                 }
             }
+            logger.info("empty excel book created from local file system. {}",f.getAbsolutePath());
             return ExcelSheetUtil.createWorkbook(null,FilenameUtils.getExtension(f.getName()));
         }
         try (InputStream inputStream = drive.asInputStream(file.getS3Key())) {
-            return ExcelSheetUtil.createWorkbook(inputStream,FilenameUtils.getExtension(file.getS3Key()));
+
+            Workbook workbook = ExcelSheetUtil.createWorkbook(inputStream,FilenameUtils.getExtension(file.getS3Key()));
+            String empty = "";
+            if (inputStream == null) {
+                empty = "empty ";
+            }
+            logger.info("{}Workbook created s3://{}",empty,file.getS3Key());
 
         }catch (Exception e){
             e.printStackTrace();

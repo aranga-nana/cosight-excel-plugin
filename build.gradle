@@ -5,7 +5,7 @@ plugins {
 }
 
 def modelVersion = '1.5.10-SNAPSHOT';
-def sdkVersion = '2.0.3-SNAPSHOT';
+def sdkVersion = '2.0.4-SNAPSHOT';
 
 group = 'au.com.cosight.forex'
 group = 'au.com.cosight.forex'

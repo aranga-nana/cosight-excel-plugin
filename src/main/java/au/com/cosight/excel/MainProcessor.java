@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class MainProcessor {
@@ -53,13 +54,17 @@ public class MainProcessor {
         cosightFile.setS3Key(driveLocation.asString());
         Workbook workbook = excelFileService.create(cosightFile);
         boolean success = updateWorkbook(workbook);
+        logger.info("workbook creation success {}",success);
         if (success) {
             String[] parts = driveLocation.asString().split("/");
             cosightFile.setLocalPath("/tmp/"+parts[parts.length -1]);
             File file = new File(cosightFile.getLocalPath());
             try (OutputStream outputStream = new FileOutputStream(file)){
                 workbook.write(outputStream);
-                return driveManager.driveInstance().copyLocal(file,generate3Key(cosightFile,prefix));
+                logger.info("wrote workbook to fle {}",file.getAbsolutePath());
+                String key = generate3Key(cosightFile,prefix);
+                success = driveManager.driveInstance().copyLocal(file,key);
+                logger.info("uploaded to {} success {}",key,success);
             }catch (Exception e) {
                 logger.error("{}",e.getMessage());
             }
@@ -95,21 +100,40 @@ public class MainProcessor {
         return true;
     }
     private void processQueries(Workbook workbook,List<String> queryUuids) throws Exception{
+        logger.info("processing entity Query ids {}",queryUuids);
         QueryClient queryClient = QueryClientBuilder.standard().build();
 
         for(String uuid : queryUuids) {
-            QueryMetaData metaData = queryClient.getMetadataByUuid(uuid);
-            excelFileService.apply(new QueryResultDataReader(metaData.getClassName(),metaData.getUuid(),queryClient),metaData.getQueryFields(),workbook);
+
+            try {
+                logger.info("retrieve query metadata for {}", uuid);
+                Optional<QueryMetaData> found = queryClient.getMetadataByUuid(uuid);
+                if (found.isPresent()) {
+
+                    QueryMetaData metaData = found.get();
+                    logger.info("retrieved {}", metaData);
+                    excelFileService.apply(new QueryResultDataReader(metaData.getClassName(), metaData.getUuid(), queryClient), metaData.getQueryFields(), workbook);
+                }
+            }catch (Exception e) {
+                logger.error("error processing {} {}",uuid,e);
+            }
+
         }
     }
     private void processEntityInstance(Workbook workbook,List<String> entities) throws Exception{
+        logger.info("processing entities {}",entities);
         EntityClient entityClient = EntityClientBuilder.standard().build();
         EntityInstanceClient entityInstanceClient = EntityInstanceClientBuilder.standard().build();
 
         for(String entity : entities){
             final ExpandedEntitiesDTO expandedEntitiesDTO = entityClient.getExpandedEntityByClassName(entity);
             final DataReader reader = new EntityInstanceDataReader(entity,entityInstanceClient);
-            excelFileService.apply(reader,expandedEntitiesDTO.getFields(),workbook);
+            try {
+                excelFileService.apply(reader,expandedEntitiesDTO.getFields(),workbook);
+            }catch (Exception e) {
+                logger.error("error processing {} ",entity,e);
+            }
+
         }
     }
 }
